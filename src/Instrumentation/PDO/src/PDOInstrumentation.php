@@ -388,7 +388,7 @@ class PDOInstrumentation
             $comments[$key] = $value;
         }
         $query = trim($query);
-        $hasSemicolon = $query[-1] === ';';
+        $hasSemicolon = $query !== '' && $query[strlen($query) - 1] === ';';
         $query = rtrim($query, ';');
 
         return $query . Utils::formatComments(array_filter($comments)) . ($hasSemicolon ? ';' : '');
