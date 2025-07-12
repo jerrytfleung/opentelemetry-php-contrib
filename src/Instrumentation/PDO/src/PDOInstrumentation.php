@@ -112,6 +112,9 @@ class PDOInstrumentation
                 $builder = self::makeBuilder($instrumentation, 'PDO::query', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
                 $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                if (!is_string($sqlStatement)) {
+                    $sqlStatement = 'undefined';
+                }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
                 }
@@ -148,6 +151,9 @@ class PDOInstrumentation
                 $builder = self::makeBuilder($instrumentation, 'PDO::exec', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
                 $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                if (!is_string($sqlStatement)) {
+                    $sqlStatement = 'undefined';
+                }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
                 }
@@ -184,6 +190,9 @@ class PDOInstrumentation
                 $builder = self::makeBuilder($instrumentation, 'PDO::prepare', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
                 $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                if (!is_string($sqlStatement)) {
+                    $sqlStatement = 'undefined';
+                }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
                 }
