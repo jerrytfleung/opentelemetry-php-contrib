@@ -123,7 +123,7 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== 'undefined') {
-                    $sqlStatement = self::appendSqlComments($sqlStatement);
+                    $sqlStatement = self::appendSqlComments($sqlStatement, true);
                     $span->setAttributes([
                         TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
                     ]);
@@ -159,7 +159,7 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== 'undefined') {
-                    $sqlStatement = self::appendSqlComments($sqlStatement);
+                    $sqlStatement = self::appendSqlComments($sqlStatement, true);
                     $span->setAttributes([
                         TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
                     ]);
@@ -378,7 +378,7 @@ class PDOInstrumentation
         return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
-    private static function appendSqlComments(string $query, bool $withTraceContext = true): string
+    private static function appendSqlComments(string $query, bool $withTraceContext): string
     {
         $comments = [];
         if ($withTraceContext) {
