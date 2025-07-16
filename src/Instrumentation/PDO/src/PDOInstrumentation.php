@@ -21,6 +21,7 @@ use Throwable;
 class PDOInstrumentation
 {
     public const NAME = 'pdo';
+    private const UNDEFINED = 'undefined';
 
     public static function register(): void
     {
@@ -111,9 +112,9 @@ class PDOInstrumentation
                 /** @psalm-suppress ArgumentTypeCoercion */
                 $builder = self::makeBuilder($instrumentation, 'PDO::query', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
-                $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                $sqlStatement = mb_convert_encoding($params[0] ?? self::UNDEFINED, 'UTF-8');
                 if (!is_string($sqlStatement)) {
-                    $sqlStatement = 'undefined';
+                    $sqlStatement = self::UNDEFINED;
                 }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
@@ -125,7 +126,7 @@ class PDOInstrumentation
                 $span->setAttributes($attributes);
 
                 Context::storage()->attach($span->storeInContext($parent));
-                if (self::isSqlCommenterEnabled() && $sqlStatement !== 'undefined') {
+                if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
                     $sqlStatement = self::appendSqlComments($sqlStatement, true);
                     $span->setAttributes([
                         TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
@@ -150,9 +151,9 @@ class PDOInstrumentation
                 /** @psalm-suppress ArgumentTypeCoercion */
                 $builder = self::makeBuilder($instrumentation, 'PDO::exec', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
-                $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                $sqlStatement = mb_convert_encoding($params[0] ?? self::UNDEFINED, 'UTF-8');
                 if (!is_string($sqlStatement)) {
-                    $sqlStatement = 'undefined';
+                    $sqlStatement = self::UNDEFINED;
                 }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
@@ -164,7 +165,7 @@ class PDOInstrumentation
                 $span->setAttributes($attributes);
 
                 Context::storage()->attach($span->storeInContext($parent));
-                if (self::isSqlCommenterEnabled() && $sqlStatement !== 'undefined') {
+                if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
                     $sqlStatement = self::appendSqlComments($sqlStatement, true);
                     $span->setAttributes([
                         TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
@@ -189,9 +190,9 @@ class PDOInstrumentation
                 /** @psalm-suppress ArgumentTypeCoercion */
                 $builder = self::makeBuilder($instrumentation, 'PDO::prepare', $function, $class, $filename, $lineno)
                     ->setSpanKind(SpanKind::KIND_CLIENT);
-                $sqlStatement = mb_convert_encoding($params[0] ?? 'undefined', 'UTF-8');
+                $sqlStatement = mb_convert_encoding($params[0] ?? self::UNDEFINED, 'UTF-8');
                 if (!is_string($sqlStatement)) {
-                    $sqlStatement = 'undefined';
+                    $sqlStatement = self::UNDEFINED;
                 }
                 if ($class === PDO::class) {
                     $builder->setAttribute(TraceAttributes::DB_QUERY_TEXT, $sqlStatement);
@@ -203,7 +204,7 @@ class PDOInstrumentation
                 $span->setAttributes($attributes);
 
                 Context::storage()->attach($span->storeInContext($parent));
-                if (self::isSqlCommenterEnabled() && $sqlStatement !== 'undefined') {
+                if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
                     $sqlStatement = self::appendSqlComments($sqlStatement, false);
                     $span->setAttributes([
                         TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
