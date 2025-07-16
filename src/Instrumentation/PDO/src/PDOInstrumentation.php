@@ -127,7 +127,7 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::appendSqlComments($sqlStatement, true);
+                    $sqlStatement = self::addSqlComments($sqlStatement, true);
                     if (self::isSqlCommenterAttributeEnabled()) {
                         $span->setAttributes([
                             TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
@@ -168,7 +168,7 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::appendSqlComments($sqlStatement, true);
+                    $sqlStatement = self::addSqlComments($sqlStatement, true);
                     if (self::isSqlCommenterAttributeEnabled()) {
                         $span->setAttributes([
                             TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
@@ -209,7 +209,7 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::appendSqlComments($sqlStatement, false);
+                    $sqlStatement = self::addSqlComments($sqlStatement, false);
                     if (self::isSqlCommenterAttributeEnabled()) {
                         $span->setAttributes([
                             TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
@@ -394,16 +394,25 @@ class PDOInstrumentation
         return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
+    private static function isSqlCommenterPrepend(): bool
+    {
+        if (class_exists('OpenTelemetry\SDK\Common\Configuration\Configuration')) {
+            return Configuration::getBoolean('OTEL_PHP_INSTRUMENTATION_PDO_SQL_COMMENTER_PREPEND', false);
+        }
+
+        return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter.prepend'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+    }
+
     private static function isSqlCommenterAttributeEnabled(): bool
     {
         if (class_exists('OpenTelemetry\SDK\Common\Configuration\Configuration')) {
             return Configuration::getBoolean('OTEL_PHP_INSTRUMENTATION_PDO_SQL_COMMENTER_ATTRIBUTE', false);
         }
 
-        return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter_attribute'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+        return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter.attribute'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
-    private static function appendSqlComments(string $query, bool $withTraceContext): string
+    private static function addSqlComments(string $query, bool $withTraceContext): string
     {
         $comments = [];
         if ($withTraceContext) {
@@ -413,9 +422,13 @@ class PDOInstrumentation
             $comments[$key] = $value;
         }
         $query = trim($query);
+        if (self::isSqlCommenterPrepend()) {
+            return Utils::formatComments(array_filter($comments)) . $query;
+        }
         $hasSemicolon = $query !== '' && $query[strlen($query) - 1] === ';';
         $query = rtrim($query, ';');
 
         return $query . Utils::formatComments(array_filter($comments)) . ($hasSemicolon ? ';' : '');
+
     }
 }
