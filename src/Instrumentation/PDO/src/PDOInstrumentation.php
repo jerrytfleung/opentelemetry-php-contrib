@@ -24,6 +24,8 @@ class PDOInstrumentation
     public const NAME = 'pdo';
     private const UNDEFINED = 'undefined';
 
+    private const ALL = 'all';
+
     public static function register(): void
     {
         $instrumentation = new CachedInstrumentation(
@@ -128,16 +130,18 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::addSqlComments($sqlStatement, true);
-                    if (self::isSqlCommenterAttributeEnabled()) {
-                        $span->setAttributes([
-                            TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
-                        ]);
-                    }
+                    if (array_key_exists(TraceAttributes::DB_SYSTEM_NAME, $attributes) && self::isSQLCommenterSupportedDatabase((string) ($attributes[TraceAttributes::DB_SYSTEM_NAME]))) {
+                        $sqlStatement = self::addSqlComments($sqlStatement, true);
+                        if (self::isSqlCommenterAttributeEnabled()) {
+                            $span->setAttributes([
+                                TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
+                            ]);
+                        }
 
-                    return [
-                        0 => $sqlStatement,
-                    ];
+                        return [
+                            0 => $sqlStatement,
+                        ];
+                    }
                 }
 
                 return [];
@@ -169,16 +173,18 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::addSqlComments($sqlStatement, true);
-                    if (self::isSqlCommenterAttributeEnabled()) {
-                        $span->setAttributes([
-                            TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
-                        ]);
-                    }
+                    if (array_key_exists(TraceAttributes::DB_SYSTEM_NAME, $attributes) && self::isSQLCommenterSupportedDatabase((string) ($attributes[TraceAttributes::DB_SYSTEM_NAME]))) {
+                        $sqlStatement = self::addSqlComments($sqlStatement, true);
+                        if (self::isSqlCommenterAttributeEnabled()) {
+                            $span->setAttributes([
+                                TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
+                            ]);
+                        }
 
-                    return [
-                        0 => $sqlStatement,
-                    ];
+                        return [
+                            0 => $sqlStatement,
+                        ];
+                    }
                 }
 
                 return [];
@@ -210,16 +216,18 @@ class PDOInstrumentation
 
                 Context::storage()->attach($span->storeInContext($parent));
                 if (self::isSqlCommenterEnabled() && $sqlStatement !== self::UNDEFINED) {
-                    $sqlStatement = self::addSqlComments($sqlStatement, false);
-                    if (self::isSqlCommenterAttributeEnabled()) {
-                        $span->setAttributes([
-                            TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
-                        ]);
-                    }
+                    if (array_key_exists(TraceAttributes::DB_SYSTEM_NAME, $attributes) && self::isSQLCommenterSupportedDatabase((string) ($attributes[TraceAttributes::DB_SYSTEM_NAME]))) {
+                        $sqlStatement = self::addSqlComments($sqlStatement, false);
+                        if (self::isSqlCommenterAttributeEnabled()) {
+                            $span->setAttributes([
+                                TraceAttributes::DB_QUERY_TEXT => $sqlStatement,
+                            ]);
+                        }
 
-                    return [
-                        0 => $sqlStatement,
-                    ];
+                        return [
+                            0 => $sqlStatement,
+                        ];
+                    }
                 }
 
                 return [];
@@ -413,6 +421,15 @@ class PDOInstrumentation
         return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter.attribute'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
     }
 
+    private static function getSqlCommenterDatabase(): array
+    {
+        if (class_exists('OpenTelemetry\SDK\Common\Configuration\Configuration')) {
+            return Configuration::getList('OTEL_PHP_INSTRUMENTATION_PDO_SQL_COMMENTER_DATABASE', [self::ALL]);
+        }
+
+        return filter_var(get_cfg_var('otel.instrumentation.pdo.sql_commenter.database'), FILTER_REQUIRE_ARRAY, FILTER_NULL_ON_FAILURE) ?? [self::ALL];
+    }
+
     private static function addSqlComments(string $query, bool $withTraceContext): string
     {
         $comments = [];
@@ -435,5 +452,12 @@ class PDOInstrumentation
 
         return $query . Utils::formatComments(array_filter($comments)) . ($hasSemicolon ? ';' : '');
 
+    }
+
+    private static function isSQLCommenterSupportedDatabase(string $db) : bool
+    {
+        $supported = self::getSqlCommenterDatabase();
+
+        return in_array(strtolower($db), $supported) || in_array(self::ALL, $supported);
     }
 }
