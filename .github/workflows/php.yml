@@ -54,6 +54,7 @@ jobs:
           'Instrumentation/Yii',
           'Logs/Monolog',
           'Propagation/Instana',
+          'Propagation/ResponseBaggage',
           'Propagation/ServerTiming',
           'Propagation/TraceResponse',
           'ResourceDetectors/Azure',

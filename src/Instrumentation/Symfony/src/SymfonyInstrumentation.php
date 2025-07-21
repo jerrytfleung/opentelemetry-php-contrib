@@ -138,6 +138,12 @@ final class SymfonyInstrumentation
 
                 $span->setAttribute(TraceAttributes::HTTP_RESPONSE_BODY_SIZE, $contentLength);
 
+                // Propagate response baggage to response, if ResponseBaggagePropagator is present
+                if (class_exists('OpenTelemetry\Contrib\Propagation\ResponseBaggage\ResponseBaggagePropagator')) {
+                    $prop = new \OpenTelemetry\Contrib\Propagation\ResponseBaggage\ResponseBaggagePropagator();
+                    $prop->inject($response, ResponsePropagationSetter::instance(), $scope->context());
+                }
+
                 // Propagate server-timing header to response, if ServerTimingPropagator is present
                 if (class_exists('OpenTelemetry\Contrib\Propagation\ServerTiming\ServerTimingPropagator')) {
                     $prop = new \OpenTelemetry\Contrib\Propagation\ServerTiming\ServerTimingPropagator();
