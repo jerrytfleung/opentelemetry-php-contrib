@@ -34,7 +34,7 @@ class ContextPropagatorFactory
                 return $propagator;
             default:
                 $props = $this->buildPropagators($propagators);
-                if ($props) {
+                if ($props !== null) {
                     return new MultiTextMapPropagator($props);
                 }
 
