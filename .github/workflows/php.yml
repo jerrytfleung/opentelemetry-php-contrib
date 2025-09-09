@@ -56,6 +56,7 @@ jobs:
           'Logs/Monolog',
           'Propagation/CloudTrace',
           'Propagation/Instana',
+          'Propagation/MultiResponse',
           'Propagation/ServerTiming',
           'Propagation/TraceResponse',
           'ResourceDetectors/Azure',

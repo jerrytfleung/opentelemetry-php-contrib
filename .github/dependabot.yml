@@ -94,6 +94,7 @@ updates:
       - "/src/MetaPackages/opentelemetry"
       - "/src/Propagation/CloudTrace"
       - "/src/Propagation/Instana"
+      - "/src/Propagation/MultiResponse"
       - "/src/Propagation/ServerTiming"
       - "/src/Propagation/TraceResponse"
       - "/src/ResourceDetectors/Azure"
