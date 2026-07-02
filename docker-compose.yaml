@@ -6,6 +6,7 @@ services:
     image: ghcr.io/open-telemetry/opentelemetry-php/opentelemetry-php-base:${PHP_VERSION}
     volumes:
     - ./:/usr/src/myapp
+    - ../cato.crt:/usr/local/share/ca-certificates/cato.crt
     user: "${PHP_USER}:root"
     environment:
       XDEBUG_MODE: ${XDEBUG_MODE:-off}
